@@ -35,7 +35,14 @@ I put a bar at the bottom of the page so you can switch who you are: shipper, ca
 - I kept the **business rules as plain functions with tests**: the release rule (`payment.ts`), carbon (`carbon.ts`), route maths (`route.ts`) and the invoice (`order.ts`).
 - I made **live tracking** a streaming Route Handler. It works out the position from when the trip started, so every viewer on any device sees the same truck. In production I would connect this stream to the telematics feed.
 - I used **no libraries beyond Next and React**. I drew the map, the signature pad and the progress bars myself in SVG and CSS, and I set strict security headers (CSP, `frame-ancestors 'none'`, nosniff).
-- I made it **accessible**: real buttons and labels, `aria-live` updates, visible focus outlines, support for reduced motion, and a layout that works down to phone width.
+- I made it **accessible to blind, low-vision, deaf and keyboard-only users** and aimed for WCAG 2.2 AA:
+  - Screen readers hear every step heading with its number and status, and every update on the order (a new quote, the border crossing, a signature, the payment) is read out.
+  - I show every one of those updates on screen too, and the app makes no sound at all, so deaf users miss nothing.
+  - You can run the whole order with the keyboard. A skip link jumps past the header, and focus is always visible.
+  - A receiver who cannot draw a signature can type their full name instead.
+  - I describe the tracking map in words, and the progress bars report kilometres to screen readers.
+  - All text passes 4.5:1 contrast, and colour never carries meaning on its own. I respect reduced motion and Windows high-contrast mode.
+  - I checked every page and every stage of the order with axe (zero violations) and ran the order with the keyboard only. I explain all of it on `/accessibility`.
 
 ## Run it
 

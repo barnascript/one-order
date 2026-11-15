@@ -7,6 +7,7 @@ import { company } from "@/lib/parties";
 import { BORDER_INDEX, ROUTE, TOTAL_KM, positionAt, project } from "@/lib/route";
 import { append } from "@/lib/store";
 import type { Role, TrackingData } from "@/lib/types";
+import { announce } from "./Announcer";
 import { Cell, Scene, Waiting } from "./Scene";
 
 interface Live {
@@ -30,6 +31,12 @@ export function useTracking(t: TrackingData | null): Live | null {
       return;
     }
     const start = positionAt(0);
+    const finished = Date.now() >= t.startedAt + t.durationSec * 1000;
+    if (finished) {
+      // The trip is over: show the end state without replaying (and re-announcing) it.
+      setLive({ ...positionAt(1), etaMinutes: 0, milestones: [{ text: "Departed Rotterdam", at: t.startedAt }, { text: "Arrived at the delivery address in Berlin", at: t.startedAt + t.durationSec * 1000 }], arrived: true, connected: false });
+      return;
+    }
     setLive({ ...start, etaMinutes: 540, milestones: [{ text: "Departed Rotterdam", at: t.startedAt }], arrived: false, connected: false });
     const es = new EventSource(`/api/track?startedAt=${t.startedAt}&durationSec=${t.durationSec}`);
     es.addEventListener("open", () => setLive((l) => (l ? { ...l, connected: true } : l)));
@@ -39,6 +46,7 @@ export function useTracking(t: TrackingData | null): Live | null {
     });
     es.addEventListener("milestone", (e) => {
       const m = JSON.parse((e as MessageEvent).data) as { text: string };
+      announce("Step 4 · Tracking", m.text);
       setLive((l) => (l ? { ...l, milestones: [...l.milestones, { text: m.text, at: Date.now() }] } : l));
     });
     es.addEventListener("arrived", () => {
@@ -105,14 +113,23 @@ export function TrackingStep({ v, role }: { v: OrderView; role: Role }) {
           <RouteMap progress={progress} />
           <div className="feed">
             <span className="w mute">{live?.connected ? "● Live from the truck" : live?.arrived || v.pod ? "Trip finished" : "Connecting…"}</span>
-            <div className="d" style={{ fontSize: 56 }}>
+            <div className="d" style={{ fontSize: 56 }} aria-hidden="true">
               {Math.round(progress * TOTAL_KM)} <span className="mute">/ {Math.round(TOTAL_KM)} km</span>
             </div>
-            <div className="bar" aria-hidden>
+            <div
+              className="bar"
+              role="progressbar"
+              aria-label="Distance driven"
+              aria-valuemin={0}
+              aria-valuemax={Math.round(TOTAL_KM)}
+              aria-valuenow={Math.round(progress * TOTAL_KM)}
+              aria-valuetext={`${Math.round(progress * TOTAL_KM)} of ${Math.round(TOTAL_KM)} kilometres`}
+            >
               <i style={{ width: `${progress * 100}%` }} />
             </div>
             <div className="w">{progress >= 1 ? "Arrived in Berlin" : `Near ${live?.near ?? "Rotterdam"} · ETA ${eta}`}</div>
-            <ol aria-live="polite">
+            <h3 className="sr">Trip events</h3>
+            <ol>
               {(live?.milestones ?? []).map((m, i) => (
                 <li key={i}>
                   {m.text} <span className="mute">· {new Date(m.at).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}</span>

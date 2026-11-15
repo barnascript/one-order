@@ -62,9 +62,9 @@ export default function LedgerPage() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main" tabIndex={-1}>
         <section className="hero">
-          <div className="slate w">Sc. 09 / Int. the record itself / always</div>
+          <div className="slate w" aria-hidden="true">Sc. 09 / Int. the record itself / always</div>
           <h1 className="d">
             <span className="l1">Nobody edits history.</span>
             <span className="l2" style={{ fontSize: "clamp(70px, 12vw, 180px)" }}>
@@ -78,7 +78,7 @@ export default function LedgerPage() {
           </p>
           <div className="actions">
             {verdict && (
-              <span className={`verdict w${verdict.ok ? "" : " bad"}`}>
+              <span className={`verdict w${verdict.ok ? "" : " bad"}`} role="status">
                 {events.length === 0 ? "Empty record" : verdict.ok ? `${events.length} events · chain intact` : `Broken at #${verdict.seq}: ${verdict.reason}`}
               </span>
             )}
@@ -92,7 +92,7 @@ export default function LedgerPage() {
             )}
             {tampered && (
               <>
-                <span className="verdict w bad">
+                <span className="verdict w bad" role="alert">
                   {tampered.verdict.ok ? "Not detected?" : `Caught: #${tampered.verdict.seq} ${tampered.verdict.reason}`}
                 </span>
                 <button className="btn btn--sm" onClick={() => setTampered(null)}>

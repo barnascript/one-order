@@ -14,10 +14,12 @@ export function Scene(props: {
   return (
     <section id={id} className={`scene${cream ? " scene--cream" : ""}${locked ? " locked" : ""}`} aria-labelledby={`${id}-h`}>
       <div className="scene-head">
-        <h2 className="d" id={`${id}-h`}>
+        <h2 className="d" id={`${id}-h`} tabIndex={-1}>
+          {n <= 7 && <span className="sr">Step {n} of 7: </span>}
           {title}
+          {locked && <span className="sr"> (not started yet)</span>}
         </h2>
-        <div className="w">
+        <div className="w" aria-hidden="true">
           Sc. {String(n).padStart(2, "0")} / {slate}
         </div>
       </div>

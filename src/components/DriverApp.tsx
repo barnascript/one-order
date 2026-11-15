@@ -39,7 +39,7 @@ function SignaturePad({ value, onChange }: { value: string; onChange: (d: string
       className="sig"
       viewBox="0 0 300 150"
       role="img"
-      aria-label={value ? "Signature captured" : "Sign here with your finger"}
+      aria-label={value ? "Signature drawn" : "Signature box: sign here with a finger, mouse or pen. You can also choose to type the name instead, below."}
       onPointerDown={(e) => {
         drawing.current = true;
         (e.target as Element).setPointerCapture?.(e.pointerId);
@@ -59,13 +59,17 @@ function SignaturePad({ value, onChange }: { value: string; onChange: (d: string
   );
 }
 
-export function DriverApp({ v }: { v: OrderView }) {
+export function DriverApp({ v, headingLevel = 3 }: { v: OrderView; headingLevel?: 2 | 3 }) {
+  const H = headingLevel === 2 ? "h2" : "h3";
   const { outbox } = useRecord();
   const [now, setNow] = useState(() => Date.now());
   const [noSignal, setNoSignal] = useState(false);
   const [receiver, setReceiver] = useState("M. Schulz (goods-in)");
   const [notes, setNotes] = useState("33 pallets, seals intact, 3 °C at the door.");
   const [sig, setSig] = useState("");
+  // Not everyone can draw on a screen. A typed name is a valid signature too.
+  const [typing, setTyping] = useState(false);
+  const [typedName, setTypedName] = useState("");
   const [photos, setPhotos] = useState<string[]>([]);
   const [msg, setMsg] = useState("");
 
@@ -90,11 +94,13 @@ export function DriverApp({ v }: { v: OrderView }) {
   }, [noSignal, outbox.length]);
 
   const progress = trackingProgress(v.tracking, now);
+  const signed = typing ? typedName.trim().length >= 2 : sig.trim().length >= 20;
   const arrived = progress >= 1;
   const pending = outbox.length > 0;
 
   const submit = async () => {
-    const pod: PodData = { receiver, signature: sig.trim(), photos, notes, capturedAt: Date.now(), capturedOffline: noSignal };
+    const signature = typing ? `typed:${typedName.trim()}` : sig.trim();
+    const pod: PodData = { receiver, signature, photos, notes, capturedAt: Date.now(), capturedOffline: noSignal };
     if (noSignal) {
       queuePod(pod);
       setMsg("No signal. Saved on the phone; it sends itself when the signal returns.");
@@ -114,25 +120,33 @@ export function DriverApp({ v }: { v: OrderView }) {
         <div className="phone-body">
           <span className="w mute">{v.order ? `${v.order.orderNo} · ${v.order.plate}` : "No job yet"}</span>
           {!v.order ? (
-            <h4>No job assigned</h4>
+            <H className="ph">No job assigned</H>
           ) : v.pod ? (
             <>
-              <h4>Delivered ✓</h4>
+              <H className="ph">Delivered ✓</H>
               <p className="note ok" style={{ margin: 0 }}>
                 Signed by {v.pod.receiver}. {v.pod.capturedOffline ? "Captured offline, sent when the signal returned." : ""}
               </p>
             </>
           ) : pending ? (
             <>
-              <h4>Saved on phone</h4>
+              <H className="ph">Saved on phone</H>
               <p className="note" style={{ margin: 0 }}>
                 The signed delivery is stored here and leaves the moment there is signal.
               </p>
             </>
           ) : !arrived ? (
             <>
-              <h4>{v.tracking ? "Driving to Berlin" : "Loading in Rotterdam"}</h4>
-              <div className="bar">
+              <H className="ph">{v.tracking ? "Driving to Berlin" : "Loading in Rotterdam"}</H>
+              <div
+                className="bar"
+                role="progressbar"
+                aria-label="Trip progress"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={Math.round(progress * 100)}
+                aria-valuetext={`${Math.round(progress * 100)} percent of the way to Berlin`}
+              >
                 <i style={{ width: `${progress * 100}%` }} />
               </div>
               <p className="note" style={{ margin: 0 }}>
@@ -141,14 +155,34 @@ export function DriverApp({ v }: { v: OrderView }) {
             </>
           ) : (
             <>
-              <h4>Hand over in Berlin</h4>
+              <H className="ph">Hand over in Berlin</H>
               <label className="w mute" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                 Receiver name
                 <input value={receiver} onChange={(e) => setReceiver(e.target.value)} />
               </label>
-              <SignaturePad value={sig} onChange={setSig} />
+              {typing ? (
+                <label className="w mute" style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                  Receiver types their full name to sign
+                  <input value={typedName} onChange={(e) => setTypedName(e.target.value)} autoComplete="off" />
+                  {typedName.trim() && (
+                    <span className="typed-sig" aria-hidden="true">
+                      {typedName}
+                    </span>
+                  )}
+                </label>
+              ) : (
+                <SignaturePad value={sig} onChange={setSig} />
+              )}
+              <button type="button" className="linkish" onClick={() => setTyping((t) => !t)}>
+                {typing ? "Draw a signature instead" : "Can't draw? Sign by typing the name instead"}
+              </button>
               <div style={{ display: "flex", gap: 8 }}>
-                <button className="btn btn--sm" type="button" onClick={() => setSig("")} style={{ flex: 1 }}>
+                <button
+                  className="btn btn--sm"
+                  type="button"
+                  onClick={() => (typing ? setTypedName("") : setSig(""))}
+                  style={{ flex: 1 }}
+                >
                   Clear
                 </button>
                 <label className="btn btn--sm" style={{ flex: 1, textAlign: "center" }}>
@@ -184,10 +218,12 @@ export function DriverApp({ v }: { v: OrderView }) {
                 Notes
                 <input value={notes} onChange={(e) => setNotes(e.target.value)} />
               </label>
-              <button className="btn btn--o" disabled={sig.trim().length < 20 || !receiver.trim()} onClick={submit}>
+              <button className="btn btn--o" disabled={!signed || !receiver.trim()} onClick={submit} aria-describedby="sig-need">
                 Confirm delivery
               </button>
-              {sig.trim().length < 20 && <span className="note">Needs a signature first.</span>}
+              <span className="note" id="sig-need">
+                {!signed ? "Needs a signature first: draw one or type the name." : ""}
+              </span>
             </>
           )}
           <div className={`signal${noSignal ? " off" : ""}`}>
@@ -201,7 +237,9 @@ export function DriverApp({ v }: { v: OrderView }) {
               onChange={(e) => setNoSignal(e.target.checked)}
             />
           </div>
-          {msg && <p className="note" style={{ margin: 0 }} aria-live="polite">{msg}</p>}
+          <p className="note" style={{ margin: 0 }} role="status">
+            {msg}
+          </p>
         </div>
       </div>
     </div>

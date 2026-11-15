@@ -11,12 +11,12 @@ export default function DriverPage() {
   return (
     <>
       <Header />
-      <main className="hero" style={{ paddingBottom: 60 }}>
-        <div className="slate w">Sc. 05 / Ext. the cab / any time</div>
+      <main id="main" tabIndex={-1} className="hero" style={{ paddingBottom: 60 }}>
+        <div className="slate w" aria-hidden="true">Sc. 05 / Ext. the cab / any time</div>
         <h1 className="d" style={{ marginBottom: 28 }}>
           <span className="l1">The driver app.</span>
         </h1>
-        <DriverApp v={v} />
+        <DriverApp v={v} headingLevel={2} />
       </main>
     </>
   );

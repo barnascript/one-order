@@ -42,9 +42,16 @@ function PodStep({ v, role }: { v: OrderView; role: Role }) {
                 </div>
                 <div className="cell">
                   <span className="w">Signature</span>
-                  <svg viewBox="0 0 300 150" style={{ width: "100%", height: 80, display: "block" }} aria-label="Receiver's signature">
-                    <path d={v.pod.signature} fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" />
-                  </svg>
+                  {v.pod.signature.startsWith("typed:") ? (
+                    <div className="typed-sig" style={{ minHeight: 80, padding: 12 }}>
+                      {v.pod.signature.slice(6)}
+                      <span className="sr"> (typed signature)</span>
+                    </div>
+                  ) : (
+                    <svg viewBox="0 0 300 150" style={{ width: "100%", height: 80, display: "block" }} role="img" aria-label={`Signature drawn by ${v.pod.receiver}`}>
+                      <path d={v.pod.signature} fill="none" stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" />
+                    </svg>
+                  )}
                   <div className="s">
                     {v.pod.photos.length} photo{v.pod.photos.length === 1 ? "" : "s"} · {v.pod.notes}
                   </div>
@@ -72,14 +79,26 @@ export function OrderPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
+  // Links to a step move keyboard and screen reader focus to that step's heading.
+  useEffect(() => {
+    const go = () => {
+      const id = window.location.hash.slice(1);
+      const h = id && document.getElementById(`${id}-h`);
+      if (h) h.focus({ preventScroll: true });
+    };
+    window.addEventListener("hashchange", go);
+    return () => window.removeEventListener("hashchange", go);
+  }, []);
+
   return (
-    <main id="main">
+    <main id="main" tabIndex={-1}>
       <section className="hero">
-        <div className="slate w">Sc. 00 / Int. one shared record / {mounted && v.current < 7 ? `step ${v.current + 1} of 7` : mounted ? "the end" : "…"}</div>
+        <div className="slate w" aria-hidden="true">Sc. 00 / Int. one shared record / {mounted && v.current < 7 ? `step ${v.current + 1} of 7` : mounted ? "the end" : "…"}</div>
         <h1 className="d">
           <span className="l1">One order. No loose ends.</span>
           <span className="l2">
-            Rotterdam <span className="arrow">→</span>
+            Rotterdam <span className="arrow" aria-hidden="true">→</span>
+            <span className="sr"> to </span>
             <br />
             Berlin
           </span>
@@ -107,8 +126,10 @@ export function OrderPage() {
       <nav className="rail" aria-label="Steps" id="record">
         {STEPS.map((s, i) => (
           <a key={s.key} href={`#${s.key}`} className={i < v.current ? "done" : i === v.current ? "now" : ""} aria-current={i === v.current ? "step" : undefined}>
-            <span className="n">{String(i + 1).padStart(2, "0")}</span>
+            <span className="n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
+            <span className="sr">Step {i + 1}: </span>
             <span className="t w">{s.label}</span>
+            <span className="sr">{i < v.current ? ", done" : i === v.current ? ", happening now" : ", not started"}</span>
           </a>
         ))}
       </nav>

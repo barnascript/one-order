@@ -7,6 +7,7 @@ import { DRIVERS, ROLE_LABEL, company, person, ROLE_PERSON } from "@/lib/parties
 import { setRole, useRole } from "@/lib/role";
 import { resetRecord, useRecord } from "@/lib/store";
 import type { Role } from "@/lib/types";
+import { Announcer, announce } from "./Announcer";
 
 /** How many things are waiting on each role right now. */
 export function waitingOn(v: OrderView, outbox: number, now: number): Record<Role, number> {
@@ -31,6 +32,9 @@ export function whoIs(role: Role, v: OrderView): string {
 export function Header() {
   return (
     <header className="hd">
+      <a className="skip" href="#main">
+        Skip to the content
+      </a>
       <Link href="/" className="logo" aria-label="One Order, home">
         <b>
           One<i>.</i>Order
@@ -45,6 +49,9 @@ export function Header() {
         </Link>
         <Link className="w keep" href="/driver">
           Driver app
+        </Link>
+        <Link className="w" href="/accessibility">
+          Accessibility
         </Link>
       </nav>
     </header>
@@ -63,15 +70,37 @@ export function Dock() {
   const counts = waitingOn(v, outbox.length, now);
   const roles: Role[] = ["shipper", "carrier", "driver", "finance"];
   return (
-    <nav className="dock" aria-label="View the order as">
-      {roles.map((r) => (
-        <button key={r} type="button" aria-pressed={role === r} onClick={() => setRole(r)} title={`See the order as the ${ROLE_LABEL[r].toLowerCase()}`}>
-          {ROLE_LABEL[r]}
-          {counts[r] > 0 && <span className="cnt">{counts[r]}</span>}
-          <span className="who">{whoIs(r, v)}</span>
-        </button>
-      ))}
-    </nav>
+    <>
+      <Announcer />
+      <nav className="dock" aria-label="See the order as">
+        {roles.map((r) => (
+          <button
+            key={r}
+            type="button"
+            aria-pressed={role === r}
+            onClick={() => {
+              setRole(r);
+              announce(
+                `You are now the ${ROLE_LABEL[r].toLowerCase()}`,
+                `${whoIs(r, v)}. ${counts[r] > 0 ? `${counts[r]} thing${counts[r] === 1 ? "" : "s"} waiting for you.` : "Nothing waiting for you right now."}`,
+              );
+            }}
+          >
+            {ROLE_LABEL[r]}
+            {counts[r] > 0 && (
+              <span className="cnt">
+                {counts[r]}
+                <span className="sr"> waiting</span>
+              </span>
+            )}
+            <span className="who">
+              <span className="sr">, </span>
+              {whoIs(r, v)}
+            </span>
+          </button>
+        ))}
+      </nav>
+    </>
   );
 }
 
@@ -84,7 +113,9 @@ export function Footer() {
         No loose ends.
       </p>
       <div className="row">
-        <span className="w">I built this with Next.js and TypeScript · Barnabas Olugbogi</span>
+        <span className="w">
+          I built this with Next.js and TypeScript · Barnabas Olugbogi · <a href="/accessibility">Accessibility</a>
+        </span>
         <span className="actions" style={{ marginTop: 0 }}>
           <a className="btn btn--sm" href="https://github.com/barnascript/one-order">
             Read the code

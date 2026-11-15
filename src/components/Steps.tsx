@@ -298,8 +298,8 @@ export function InvoiceStep({ v }: { v: OrderView }) {
           <table>
             <thead>
               <tr>
-                <th>Line</th>
-                <th>Amount</th>
+                <th scope="col">Line</th>
+                <th scope="col">Amount</th>
               </tr>
             </thead>
             <tbody>
@@ -371,7 +371,7 @@ export function PaymentStep({ v, role }: { v: OrderView; role: Role }) {
             })}
           </div>
           <p className="note" style={{ marginTop: 14 }}>
-            {check.needs || "Enough signatures. Releasing…"}
+            <span role="status">{check.needs || "Enough signatures. Releasing…"}</span>
           </p>
           {role === "finance" ? (
             <div className="actions">
@@ -393,7 +393,9 @@ export function PaymentStep({ v, role }: { v: OrderView; role: Role }) {
               >
                 Approve {eur(i.totalEur)}
               </button>
-              {msg && <span className="note" style={{ color: "var(--bad)" }}>{msg}</span>}
+              <span className="note err" role="alert">
+                {msg}
+              </span>
             </div>
           ) : (
             <p className="note">

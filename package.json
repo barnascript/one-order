@@ -2,7 +2,7 @@
   "name": "one-order",
   "version": "0.1.0",
   "private": true,
-  "description": "One freight order, seven steps, one shared record: a working demo from request to payment.",
+  "description": "I built one freight order from request to payment, seven steps on one shared record.",
   "scripts": {
     "dev": "next dev --port 3900",
     "build": "next build",

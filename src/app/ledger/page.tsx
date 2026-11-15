@@ -72,8 +72,9 @@ export default function LedgerPage() {
             </span>
           </h1>
           <p className="lede">
-            Every step of the order is an event. Each event carries the fingerprint (SHA-256) of the one before it, so changing anything after the fact
-            breaks every fingerprint from that point on. Same idea as the permissioned ledger underneath a freight network, small enough to read.
+            I save every step of the order as an event, and each event carries the fingerprint (SHA-256) of the one before it. If anyone changes anything
+            afterwards, every fingerprint from that point on breaks. I used the same idea as the permissioned ledger under a freight network, but kept it small
+            enough to read.
           </p>
           <div className="actions">
             {verdict && (
@@ -100,7 +101,7 @@ export default function LedgerPage() {
               </>
             )}
           </div>
-          <p className="note">The tamper test edits a copy in your browser. The real record is never touched.</p>
+          <p className="note">My tamper test edits a copy in your browser. It never touches the real record.</p>
         </section>
 
         <section className="scene">

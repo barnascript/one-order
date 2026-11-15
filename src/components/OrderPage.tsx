@@ -27,8 +27,8 @@ function PodStep({ v, role }: { v: OrderView; role: Role }) {
           )}
           <div>
             <p className="lede" style={{ marginTop: 0 }}>
-              Loading docks are where signal dies. The driver app keeps working with no signal: it saves the signed delivery on the phone and sends it when
-              the signal comes back. The record notes that it was captured offline, so nobody argues about the time later.
+              Signal dies at loading docks, so I made the driver app keep working without it. It saves the signed delivery on the phone and sends it when
+              the signal comes back. I also mark on the record that the driver captured it offline, so nobody argues about the time later.
             </p>
             {v.pod && (
               <div className="grid g2" style={{ marginTop: 20 }}>
@@ -85,8 +85,8 @@ export function OrderPage() {
           </span>
         </h1>
         <p className="lede">
-          A working freight order from the first request to the last payment. Every company sees the same record, every step is signed onto it, and
-          nothing gets typed twice. Switch who you are in the bar at the bottom.
+          I built a working freight order, from the first request to the last payment. Every company sees the same record, I sign every step onto it,
+          and nobody types anything twice. Switch who you are in the bar at the bottom.
         </p>
         <div className="cta">
           <a className="btn btn--o" href={`#${STEPS[Math.min(v.current, 6)]!.key}`}>

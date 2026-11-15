@@ -84,7 +84,7 @@ export function Footer() {
         No loose ends.
       </p>
       <div className="row">
-        <span className="w">A working demo by Barnabas Olugbogi · Next.js · TypeScript</span>
+        <span className="w">I built this with Next.js and TypeScript · Barnabas Olugbogi</span>
         <span className="actions" style={{ marginTop: 0 }}>
           <a className="btn btn--sm" href="https://github.com/barnascript/one-order">
             Read the code

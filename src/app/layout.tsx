@@ -8,7 +8,7 @@ const wide = Archivo({ subsets: ["latin"], axes: ["wdth"], variable: "--font-wid
 export const metadata: Metadata = {
   title: "One Order: Rotterdam → Berlin, request to payment",
   description:
-    "A working freight order: request, quotes, transport order, live tracking, proof of delivery on the driver's phone, invoice and two-signature payment, all on one hash-chained record.",
+    "I built a working freight order: request, quotes, transport order, live tracking, proof of delivery on the driver's phone, invoice and two-signature payment, all on one hash-chained record.",
 };
 
 export const viewport: Viewport = { themeColor: "#0a0a08", width: "device-width", initialScale: 1 };

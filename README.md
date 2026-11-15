@@ -1,8 +1,8 @@
 # One Order
 
-**One freight order, seven steps, one shared record.** A working demo of a road-freight order from the first request to the last payment, Rotterdam → Berlin.
+I built One Order to show one road-freight order going all the way from the first request to the last payment, Rotterdam to Berlin, on a single shared record.
 
-Live: _add the Render URL here_
+Live: _I add the Render link here once it is up._
 
 ```
  request ─► quotes ─► transport order ─► track & trace ─► proof of delivery ─► invoice ─► payment
@@ -10,43 +10,43 @@ Live: _add the Render URL here_
     └──────────┴─────────────┴──── one hash-chained record ───────┴───────────────┴──────────┘
 ```
 
-Switch who you are in the bar at the bottom (shipper, carrier, driver, finance). Every role sees the same order, from its own side.
+I put a bar at the bottom of the page so you can switch who you are: shipper, carrier, driver or finance. Every role sees the same order, each from its own side.
 
-## What works
+## What I built
 
-| Step | What happens |
+| Step | What I made it do |
 |---|---|
-| 1. Request | The shipper describes the load once (lane, weight, pallets, vehicle, window, target price). |
-| 2. Quotes | Three vetted carriers quote on the same request; you can quote as one of them. Cheapest and fastest are tagged, with price per km and CO₂e per quote. |
-| 3. Transport order | The accepted quote becomes the order with driver and truck. Nobody retypes it. |
-| 4. Track & trace | The truck's position streams from the server over Server-Sent Events (`/api/track`), with border and arrival milestones and an ETA. The nine-hour drive plays in about 75 seconds. |
-| 5. Proof of delivery | The driver's phone captures name, finger signature, photos and notes. **It works with no signal**: the delivery is saved on the phone and sent when the signal returns, and the record says it was captured offline. |
-| 6. Invoice | Written automatically from the signed delivery and linked to it (cross-border B2B, reverse-charge VAT). |
-| 7. Payment | Above the first signer's limit, a second, different person with a higher limit must sign before the money goes. |
-| + Carbon | Per order, well-to-wheel and tank-to-wheel, following the ISO 14083 / GLEC method with default factors (and saying so). |
-| + Return load | After delivery the carrier sees loads heading home, with empty kilometres and CO₂e avoided. |
-| + The record | Every step is an event carrying the SHA-256 of the one before it. `/ledger` shows the chain, and "Try to change the price" proves that an edit is caught. |
+| 1. Request | The shipper describes the load once: lane, weight, pallets, vehicle, delivery window and an optional target price. |
+| 2. Quotes | Three vetted carriers quote on the same request, and you can quote as one of them. I tag the cheapest and the fastest, and I show the price per km and the CO₂e for each quote. |
+| 3. Transport order | The accepted quote turns into the order, with the driver and the truck. Nobody types it again. |
+| 4. Track & trace | I stream the truck's position from the server with Server-Sent Events (`/api/track`), with the border crossing, the arrival and a running ETA. I compress the nine-hour drive into about 75 seconds. |
+| 5. Proof of delivery | The driver's phone takes the receiver's name, a finger signature, photos and notes. **I made it work with no signal**: the phone saves the delivery and sends it when the signal comes back, and the record shows that the driver captured it offline. |
+| 6. Invoice | The signed delivery writes the invoice and links to it (cross-border B2B, so reverse-charge VAT). |
+| 7. Payment | When the amount is above the first signer's limit, a second, different person with a higher limit must sign before the money goes. |
+| + Carbon | I calculate each order's emissions, well-to-wheel and tank-to-wheel, with the ISO 14083 / GLEC method and default factors, and I say on screen that they are defaults. |
+| + Return load | After the delivery, the carrier sees loads going back home, with the empty kilometres and the CO₂e each one saves. |
+| + The record | I save every step as an event that carries the SHA-256 of the event before it. On `/ledger` I show the chain, and "Try to change the price" shows the check catching the edit. |
 
-## How it is built
+## How I built it
 
-- **Next.js 16 (App Router), React 19, strict TypeScript** (`noUncheckedIndexedAccess`).
-- **Event-sourced.** Screens only read events and append new ones; `deriveOrder()` turns the event list into the current state. Swapping the browser store for a real ledger or API is one module (`src/lib/store.ts`).
-- **Hash chain** (`src/lib/ledger.ts`): canonical JSON, SHA-256 via Web Crypto, appends serialised so the chain never forks.
-- **Business rules are plain functions with tests:** release rule (`payment.ts`), carbon (`carbon.ts`), route maths (`route.ts`), invoice (`order.ts`).
-- **Live tracking** is a streaming Route Handler: the position comes from when the trip started, so every viewer on any device sees the same truck. In production that stream would sit on the telematics topic.
-- **No libraries beyond Next and React.** Map, signature pad and charts are hand-written SVG. Strict security headers (CSP, `frame-ancestors 'none'`, nosniff).
-- Accessible: real buttons and labels, `aria-live` updates, focus outlines, works with reduced motion, responsive down to phone width.
+- I used **Next.js 16 (App Router), React 19 and strict TypeScript** (`noUncheckedIndexedAccess` on).
+- I built it **event-sourced**. The screens only read events and add new ones, and `deriveOrder()` turns the list of events into the current state. To move from the browser store to a real ledger or API, I only need to swap one module (`src/lib/store.ts`).
+- I wrote the **hash chain** in `src/lib/ledger.ts`: canonical JSON, SHA-256 through Web Crypto, and one append at a time so the chain never forks.
+- I kept the **business rules as plain functions with tests**: the release rule (`payment.ts`), carbon (`carbon.ts`), route maths (`route.ts`) and the invoice (`order.ts`).
+- I made **live tracking** a streaming Route Handler. It works out the position from when the trip started, so every viewer on any device sees the same truck. In production I would connect this stream to the telematics feed.
+- I used **no libraries beyond Next and React**. I drew the map, the signature pad and the progress bars myself in SVG and CSS, and I set strict security headers (CSP, `frame-ancestors 'none'`, nosniff).
+- I made it **accessible**: real buttons and labels, `aria-live` updates, visible focus outlines, support for reduced motion, and a layout that works down to phone width.
 
 ## Run it
 
 ```bash
 npm install
 npm run dev        # http://localhost:3900
-npm test           # vitest: hash chain, tamper detection, release rule, carbon, route, invoice
+npm test           # hash chain, tamper detection, release rule, carbon, route, invoice
 npm run typecheck
 npm run build
 ```
 
-All companies and people are fictional. The record lives in your browser (localStorage), so "Start again" in the footer clears it.
+I made up every company and person in it. The record lives in your browser (localStorage), and "Start again" in the footer clears it.
 
-Made by Barnabas Olugbogi.
+Barnabas Olugbogi · [github.com/barnascript](https://github.com/barnascript)
